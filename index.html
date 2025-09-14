@@ -50,8 +50,12 @@
     .bin { background: rgba(106,166,255,.18); color: #8ec1ff; border: 1px solid rgba(106,166,255,.35); }
     .dec { background: rgba(56,211,159,.18); color: #9cf2d4; border: 1px solid rgba(56,211,159,.35); }
 
-    /* Une seule ligne, sans barre de défilement horizontale */
-    .question { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 16px; margin: 12px 0 10px; white-space: nowrap; overflow: hidden; }
+    /* Fix pour afficher l'IP en binaire sur plusieurs lignes si nécessaire */
+    .question {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 16px; margin: 12px 0 10px;
+      word-wrap: break-word;
+    }
     .question .oct { color: var(--warning); display:inline-block; letter-spacing: 2px; }
 
     label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
@@ -272,3 +276,4 @@
   </script>
 </body>
 </html>
+
