@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Exercices : IP en binaire ↔ décimal</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #131a33;
+      --ink: #e7ecff;
+      --muted: #aeb6d9;
+      --accent: #6aa6ff;
+      --success: #38d39f;
+      --error: #ff6b6b;
+      --warning: #ffd166;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--ink); background: radial-gradient(1200px 600px at 10% -10%, #1a2250 0%, var(--bg) 40%, #070b16 100%);
+    }
+    header { padding: 24px 16px 8px; text-align: center; }
+    h1 { margin: 0 0 8px; font-size: clamp(22px, 2.4vw, 34px); letter-spacing: 0.3px; }
+    p.sub { margin: 0 auto; max-width: 1000px; color: var(--muted); }
+
+    .wrap { max-width: 1200px; margin: 24px auto 96px; padding: 0 16px; }
+
+    .controls { display:flex; gap: 12px; flex-wrap: wrap; justify-content:center; margin: 16px 0 24px; }
+    button {
+      appearance: none; border: 0; border-radius: 14px; padding: 12px 16px; font-weight: 600; cursor: pointer;
+      background: linear-gradient(180deg, #3c66ff, #3153cc); color: white; box-shadow: 0 10px 24px rgba(49,83,204,.35), inset 0 1px 0 rgba(255,255,255,.25);
+    }
+    button.secondary { background: linear-gradient(180deg, #27304f, #1b2340); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+    button:active { transform: translateY(1px); }
+
+    /* Deux cartes par ligne (jamais 3). Sur mobile: 1 par ligne */
+    .grid { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(520px, 1fr)); align-items: stretch; }
+    @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, minmax(460px, 1fr)); } }
+    @media (max-width: 980px)  { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: linear-gradient(180deg, #151d3c 0%, #0f1530 100%);
+      border-radius: 18px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .type { display:inline-flex; align-items:center; gap:8px; font-size: 12px; letter-spacing: .4px; color: var(--muted); text-transform: uppercase; }
+    .badge { padding: 4px 8px; border-radius: 999px; font-weight:700; }
+    .bin { background: rgba(106,166,255,.18); color: #8ec1ff; border: 1px solid rgba(106,166,255,.35); }
+    .dec { background: rgba(56,211,159,.18); color: #9cf2d4; border: 1px solid rgba(56,211,159,.35); }
+
+    /* Une seule ligne, sans barre de défilement horizontale */
+    .question { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 16px; margin: 12px 0 10px; white-space: nowrap; overflow: hidden; }
+    .question .oct { color: var(--warning); display:inline-block; letter-spacing: 2px; }
+
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    input[type="text"] {
+      width: 100%; padding: 12px 12px; border-radius: 12px; background: #0d1330; color: var(--ink);
+      border: 1px solid rgba(255,255,255,.12); outline: none; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 15px;
+    }
+    input[type="text"]::placeholder { color: #6c739b; }
+
+    .feedback { min-height: 22px; margin-top: 8px; font-size: 13px; }
+    .ok { color: var(--success); }
+    .ko { color: var(--error); }
+
+    footer { position: fixed; inset-inline: 0; bottom: 0; backdrop-filter: blur(8px); background: rgba(7,10,22,.7);
+      border-top: 1px solid rgba(255,255,255,.06); padding: 10px 16px; color: var(--muted); font-size: 13px; }
+    footer .inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+
+    /* YOU WIN overlay */
+    .win { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 50; background: radial-gradient(1200px 600px at 50% -10%, rgba(58,95,255,.35) 0%, rgba(4,8,18,.9) 50%, rgba(4,8,18,.95) 100%); }
+    .win .panel { text-align: center; }
+    .win h2 { font-size: clamp(36px, 5vw, 72px); margin: 0 0 8px; letter-spacing: 1px; }
+    .win p { margin: 0; color: var(--muted); }
+
+    /* Confetti */
+    #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 60; display: none; }
+  </style>
+</head>
+<body>
+  <canvas id="confetti"></canvas>
+  <div class="win" id="win" role="status" aria-live="assertive">
+    <div class="panel">
+      <h2>YOU WIN !!! 🎉</h2>
+      <p>Félicitations — toutes les réponses sont correctes.</p>
+    </div>
+  </div>
+
+  <header>
+    <h1>IP IPv4 : 6 exercices (binaire ↔ décimal)</h1>
+    <p class="sub">Convertis chaque adresse. Écris <strong>quatre</strong> parties. En binaire, chaque partie doit avoir <strong>8 bits</strong> (ex. 00000010). Clique <em>Vérifier</em>. Tu peux corriger jusqu’à réussir. Quand tout est juste… 🎊</p>
+  </header>
+
+  <div class="wrap">
+    <div class="controls">
+      <button id="checkBtn">Vérifier</button>
+      <button class="secondary" id="resetBtn" title="Effacer toutes mes réponses">Effacer</button>
+      <button class="secondary" id="newBtn" title="Générer un nouvel ensemble d’exercices">Nouveaux exercices</button>
+    </div>
+
+    <div id="grid" class="grid" aria-live="polite"></div>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <div><strong>Astuce</strong> — 1 octet en binaire vaut: 128 · 64 · 32 · 16 · 8 · 4 · 2 · 1</div>
+      <div>Exemples: <code>00000010 → 2</code> · <code>11000000 → 192</code></div>
+    </div>
+  </footer>
+
+  <script>
+    // ---------- Utilitaires ----------
+    const pad8 = n => n.toString(2).padStart(8, '0');
+    const randOctet = () => Math.floor(Math.random() * 256);
+    const toBinIp = ([a,b,c,d]) => [a,b,c,d].map(pad8).join('.');
+    const toDecIp = ([a,b,c,d]) => `${a}.${b}.${c}.${d}`;
+
+    function parseDecIP(str) {
+      const m = str.trim().replace(/\s+/g,'').match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+      if(!m) return null;
+      const parts = m.slice(1).map(x=>+x);
+      for (const p of parts) if (p<0 || p>255) return null;
+      return parts;
+    }
+    function parseBinIP(str) {
+      const s = str.trim().replace(/\s+/g,'');
+      if (s.includes('.')) {
+        const parts = s.split('.');
+        if (parts.length !== 4) return null;
+        if (!parts.every(p=>/^[01]{8}$/.test(p))) return null;
+        return parts;
+      } else {
+        if(!/^[01]{32}$/.test(s)) return null;
+        return [0,1,2,3].map(i=>s.slice(i*8,(i+1)*8));
+      }
+    }
+
+    // ---------- Génération des exercices ----------
+    let exercises = [];
+    function makeExercise(id, mode) {
+      const octs = [randOctet(), randOctet(), randOctet(), randOctet()];
+      if (mode === 'bin2dec') {
+        return { id, mode, prompt: toBinIp(octs), answer: toDecIp(octs) };
+      } else {
+        return { id, mode, prompt: toDecIp(octs), answer: toBinIp(octs) };
+      }
+    }
+
+    function generateExercises() {
+      exercises = [];
+      const kinds = ['bin2dec','bin2dec','bin2dec','dec2bin','dec2bin','dec2bin'].sort(()=>Math.random()-0.5);
+      kinds.forEach((k, i)=>exercises.push(makeExercise(`ex${i+1}`, k)));
+      render();
+    }
+
+    function render() {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      for (const ex of exercises) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const type = ex.mode === 'bin2dec' ? 'Binaire → Décimal' : 'Décimal → Binaire';
+        const badgeClass = ex.mode === 'bin2dec' ? 'badge bin' : 'badge dec';
+        card.innerHTML = `
+          <div class="type"><span class="${badgeClass}">${type}</span></div>
+          <div class="question">${ex.mode==='bin2dec' ? 'Adresse en binaire :' : 'Adresse en décimal :' } 
+            <span class="oct">${ex.prompt}</span>
+          </div>
+          <label for="in-${ex.id}">Ta réponse</label>
+          <input id="in-${ex.id}" type="text" placeholder="${ex.mode==='bin2dec' ? 'ex: 192.168.0.1' : 'ex: 11000000.10101000.00000000.00000001'}" inputmode="numeric" autocomplete="off" spellcheck="false" />
+          <div id="fb-${ex.id}" class="feedback" aria-live="polite"></div>
+        `;
+        grid.appendChild(card);
+        ex.inputEl = card.querySelector('input');
+        ex.feedbackEl = card.querySelector('.feedback');
+        ex.inputEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ document.getElementById('checkBtn').click(); }});
+      }
+    }
+
+    // ---------- Vérification ----------
+    function normalizeBinary(s) {
+      const parts = parseBinIP(s);
+      if(!parts) return null;
+      return parts.join('.');
+    }
+
+    function checkAll() {
+      let allGood = true;
+      for (const ex of exercises) {
+        const value = ex.inputEl.value.trim();
+        let ok = false, msg='';
+        if (!value) { ok = false; msg = '✍️ Entre une réponse.'; }
+        else if (ex.mode === 'bin2dec') {
+          const dec = parseDecIP(value);
+          ok = !!dec && toDecIp(dec) === ex.answer;
+          msg = ok ? '✅ Correct !' : '❌ Réessaie. Format attendu : a.b.c.d (0-255).';
+        } else {
+          const bin = normalizeBinary(value);
+          ok = !!bin && bin === ex.answer;
+          msg = ok ? '✅ Correct !' : '❌ Réessaie. Donne 4 blocs de 8 bits.';
+        }
+        ex.feedbackEl.textContent = msg;
+        ex.feedbackEl.className = 'feedback ' + (ok ? 'ok' : 'ko');
+        if(!ok) allGood = false;
+      }
+      if (allGood) celebrate();
+    }
+
+    // ---------- Célébration (confettis + VOIX) ----------
+    const cvs = document.getElementById('confetti');
+    const ctx = cvs.getContext('2d');
+    let particles = []; let rafId = 0;
+
+    function celebrate() {
+      const win = document.getElementById('win');
+      win.style.display = 'flex';
+      // Voix « YOU WIN! » via Web Speech API (déjà utilisée précédemment)
+      try {
+        const u = new SpeechSynthesisUtterance('YOU WIN!');
+        u.rate = 0.95; u.pitch = 1.05; u.volume = 1;
+        const enVoice = speechSynthesis.getVoices().find(v=>/en/i.test(v.lang)) || null;
+        if (enVoice) u.voice = enVoice;
+        speechSynthesis.cancel();
+        setTimeout(()=>speechSynthesis.speak(u), 120);
+      } catch {}
+      startConfetti();
+      setTimeout(()=>{ win.style.display='none'; stopConfetti(); }, 3500);
+    }
+
+    // Confettis canvas
+    function startConfetti() {
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      cvs.style.display = 'block';
+      particles = Array.from({length: 200}, ()=>makeParticle());
+      loop();
+    }
+    function stopConfetti(){ window.removeEventListener('resize', resizeCanvas); cancelAnimationFrame(rafId); cvs.style.display = 'none'; }
+    function resizeCanvas(){ cvs.width = innerWidth; cvs.height = innerHeight; }
+    function rand(min,max){ return Math.random()*(max-min)+min; }
+    function makeParticle(){
+      const angle = rand(-Math.PI, 0); const speed = rand(2, 6);
+      return { x: cvs.width/2 + rand(-80,80), y: cvs.height/2 + rand(-40,40), vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed - 3, size: rand(6,12), rot: rand(0, Math.PI), vr: rand(-0.2,0.2), life: rand(2.2, 3.5), age: 0 };
+    }
+    function loop(){
+      rafId = requestAnimationFrame(loop);
+      ctx.clearRect(0,0,cvs.width,cvs.height); const dt = 1/60;
+      for (const p of particles) {
+        p.age += dt; if(p.age > p.life){ Object.assign(p, makeParticle()); continue; }
+        p.vy += 0.08; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        if (p.x < 0) p.x = cvs.width; if (p.x > cvs.width) p.x = 0;
+        if (p.y > cvs.height) { Object.assign(p, makeParticle()); p.y = -10; }
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = `hsl(${(p.x/innerWidth)*360}, 90%, 60%)`;
+        ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6); ctx.restore();
+      }
+    }
+
+    // ---------- Actions UI ----------
+    document.getElementById('checkBtn').addEventListener('click', checkAll);
+    document.getElementById('resetBtn').addEventListener('click', ()=>{
+      for (const ex of exercises) { if(ex.inputEl){ ex.inputEl.value=''; } if(ex.feedbackEl){ ex.feedbackEl.textContent=''; ex.feedbackEl.className='feedback'; } }
+      document.getElementById('win').style.display='none';
+      stopConfetti();
+    });
+    document.getElementById('newBtn').addEventListener('click', ()=>{ generateExercises(); });
+
+    // Lancer les 6 exercices au chargement
+    generateExercises();
+  </script>
+</body>
+</html>
